@@ -1,2 +1,4 @@
 # fsm
-finite state machine in Go
+Just finite state machine in Go.
+Simple and powerful.
+See `example` directory.
