@@ -7,8 +7,8 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 )
 
-var NotProcessed = errors.New("Неизвестная команда, попробуйте другую!")
-var NoChangeState = errors.New("состояние не меняется")
+var NotProcessed = errors.New("I don't understand!")
+var NoChangeState = errors.New("stay here")
 
 type ProcessorFunc func() (fsm.StateFunc, error)
 
