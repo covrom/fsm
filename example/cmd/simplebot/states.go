@@ -27,52 +27,77 @@ func NewUserState(bot *tgbotapi.BotAPI, chatID int64, chin chan *tgbotapi.Messag
 }
 
 func (s *UserState) StartState() (fsm.StateFunc, error) {
-	buttons := tgbotapi.NewReplyKeyboard(
-		tgbotapi.NewKeyboardButtonRow(
-			tgbotapi.NewKeyboardButton(BtnState1),
-		),
-	)
-	msg := tgbotapi.NewMessage(s.ChatID, "Main menu")
-	msg.ReplyMarkup = buttons
-	s.bot.Send(msg)
+	s.SendWithKeyboard1("Main menu", BtnState1)
+
+	uip := &UserInputProcessor{
+		Commands: ProcessorFuncMap{
+			"start": func() (fsm.StateFunc, error) {
+				return s.StartState, nil
+			},
+		},
+		Texts: ProcessorFuncMap{
+			BtnState1: func() (fsm.StateFunc, error) {
+				return s.State1State, nil
+			},
+		},
+		OtherCommand: func(cmd string) (fsm.StateFunc, error) {
+			s.Send("not implemented")
+			return nil, NoChangeState
+		},
+		OtherText: func(txt string) (fsm.StateFunc, error) {
+			s.Send("not implemented")
+			return nil, NoChangeState
+		},
+	}
 
 	for msg := range s.chin {
-		if msg.IsCommand() && msg.Command() == "start" {
-			// nothing, we are here
-			continue
+		rs, err := uip.Process(msg)
+		if err != nil {
+			if err == NoChangeState {
+				continue
+			}
+			s.SendAndCloseKeyboard(err.Error())
+			return s.StartState, nil
 		}
-		switch msg.Text {
-		case BtnState1:
-			return s.State1State, nil
-		default:
-			m := tgbotapi.NewMessage(s.ChatID, "not implemented")
-			s.bot.Send(m)
-		}
+		return rs, nil
 	}
 	return nil, nil
 }
 
 func (s *UserState) State1State() (fsm.StateFunc, error) {
-	buttons := tgbotapi.NewReplyKeyboard(
-		tgbotapi.NewKeyboardButtonRow(
-			tgbotapi.NewKeyboardButton(BtnReturn),
-		),
-	)
-	msg := tgbotapi.NewMessage(s.ChatID, "State 1 menu")
-	msg.ReplyMarkup = buttons
-	s.bot.Send(msg)
+	s.SendWithKeyboard1("State 1 menu", BtnReturn)
+
+	uip := &UserInputProcessor{
+		Commands: ProcessorFuncMap{
+			"start": func() (fsm.StateFunc, error) {
+				return s.StartState, nil
+			},
+		},
+		Texts: ProcessorFuncMap{
+			BtnReturn: func() (fsm.StateFunc, error) {
+				return s.StartState, nil
+			},
+		},
+		OtherCommand: func(cmd string) (fsm.StateFunc, error) {
+			s.Send("not implemented")
+			return nil, NoChangeState
+		},
+		OtherText: func(txt string) (fsm.StateFunc, error) {
+			s.Send("not implemented")
+			return nil, NoChangeState
+		},
+	}
 
 	for msg := range s.chin {
-		if msg.IsCommand() && msg.Command() == "start" {
+		rs, err := uip.Process(msg)
+		if err != nil {
+			if err == NoChangeState {
+				continue
+			}
+			s.SendAndCloseKeyboard(err.Error())
 			return s.StartState, nil
 		}
-		switch msg.Text {
-		case BtnReturn:
-			return s.StartState, nil
-		default:
-			m := tgbotapi.NewMessage(s.ChatID, "not implemented")
-			s.bot.Send(m)
-		}
+		return rs, nil
 	}
 	return nil, nil
 }

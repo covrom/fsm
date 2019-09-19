@@ -28,22 +28,7 @@ func main() {
 			userState := NewUserState(bot, update.Message.Chat.ID, chin)
 			go fsm.StateMachine(userState.StartState)
 		} else {
-			if update.Message.IsCommand() {
-				switch update.Message.Command() {
-				case "start":
-					chin <- update.Message
-				default:
-					msg := tgbotapi.NewMessage(update.Message.Chat.ID, "")
-					msg.ReplyToMessageID = update.Message.MessageID
-					msg.Text = "I don't understand..."
-					if _, err := bot.Send(msg); err != nil {
-						log.Println(err)
-					}
-				}
-			} else {
-				chin <- update.Message
-			}
+			chin <- update.Message
 		}
 	}
-
 }
